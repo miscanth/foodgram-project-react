@@ -19,12 +19,18 @@ from rest_framework import routers
 from api import views
 
 router = routers.DefaultRouter()
-router.register('recipes', views.RecipeView, basename='recipe')
-router.register('tags', views.TagView, 'tag')
-router.register('ingredients', views.IngredientView, 'ingredient')
+router.register(r'recipes', views.RecipeView, basename='recipe')
+router.register(r'tags', views.TagView, 'tag')
+router.register(r'ingredients', views.IngredientView, 'ingredient')
+router.register(r'users/subscriptions', views.SubscriptionsView, basename='subscriptions')
+router.register(r'users', views.UserView, 'user')
+router.register(r'follow', views.FollowView, 'follow')
+
 
 urlpatterns = [
     # path('', include('recipes.urls')),
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('api/', include('djoser.urls')),  # Работа с пользователями
+    path('api/', include('djoser.urls.authtoken')),  # Работа с токенами
 ]

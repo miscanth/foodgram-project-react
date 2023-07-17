@@ -1,9 +1,10 @@
 from django.contrib import admin
-from .models import Ingredient, Recipe, RecipeIngredient, Tag
+from .models import Ingredient, Follow, Recipe, RecipeIngredient, Tag
 
 
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'name',
         'author'
     )
@@ -13,8 +14,19 @@ class RecipeAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
+class FollowAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'user',
+        'author'
+    )
+    list_filter = ('user', 'author')
+    empty_value_display = '-пусто-'
+
+
 class IngredientAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'name',
         'measurement_unit'
     )
@@ -24,6 +36,7 @@ class IngredientAdmin(admin.ModelAdmin):
 
 class RecipeIngredientAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'ingredient',
         'amount'
     )
@@ -32,6 +45,7 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
 
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
+admin.site.register(Follow, FollowAdmin)
 admin.site.register(Tag)
 admin.site.register(RecipeIngredient, RecipeIngredientAdmin)
 
