@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Ingredient, Follow, Recipe, RecipeIngredient, Tag
+from .models import Ingredient, Favourite, Follow, Recipe, RecipeIngredient, ShoppingCart, Tag
 
 
 class RecipeAdmin(admin.ModelAdmin):
@@ -24,6 +24,26 @@ class FollowAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
+class FavouriteAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'user',
+        'recipe'
+    )
+    list_filter = ('user', 'recipe')
+    empty_value_display = '-пусто-'
+
+
+class ShoppingCartAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'user',
+        'recipe'
+    )
+    list_filter = ('user', 'recipe')
+    empty_value_display = '-пусто-'
+
+
 class IngredientAdmin(admin.ModelAdmin):
     list_display = (
         'id',
@@ -45,6 +65,8 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
 
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
+admin.site.register(Favourite, FavouriteAdmin)
+admin.site.register(ShoppingCart, ShoppingCartAdmin)
 admin.site.register(Follow, FollowAdmin)
 admin.site.register(Tag)
 admin.site.register(RecipeIngredient, RecipeIngredientAdmin)

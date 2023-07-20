@@ -149,7 +149,7 @@ class Follow(models.Model):
         verbose_name='Автор'
     )
     pub_date = models.DateTimeField(
-        'Дата публикации',
+        'Дата подписки',
         auto_now_add=True,
         db_index=True
     )
@@ -161,3 +161,65 @@ class Follow(models.Model):
 
     def __str__(self):
         return f'{self.user} подписан на {self.author}'
+
+
+class Favourite(models.Model):
+    """Класс для описания системы добавления рецептов в избранное"""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='user_favourite_list',
+        verbose_name='Подписчик'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='favourite_recipe',
+        verbose_name='Понравившийся рецепт'
+    )
+    pub_date = models.DateTimeField(
+        'Дата добавления',
+        auto_now_add=True,
+        db_index=True
+    )
+
+    class Meta:
+        ordering = ('-pub_date',)
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
+
+    def __str__(self):
+        return f'{self.user} добавил в избранное {self.recipe}'
+
+
+class ShoppingCart(models.Model):
+    """Класс для описания системы добавления рецептов в список покупок"""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='user_shopping_cart',
+        verbose_name='Подписчик'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='recipe_shopping_cart',
+        verbose_name='Рецепт, добавленный в список покупок'
+    )
+    pub_date = models.DateTimeField(
+        'Дата добавления',
+        auto_now_add=True,
+        db_index=True
+    )
+
+    class Meta:
+        ordering = ('-pub_date',)
+        verbose_name = 'Список покупок'
+        verbose_name_plural = 'Списки покупок'
+
+    def __str__(self):
+        return f'{self.user} добавил в список покупок {self.recipe}'

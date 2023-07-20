@@ -19,17 +19,26 @@ from rest_framework import routers
 from api import views
 
 router = routers.DefaultRouter()
+router.register(r'recipes/download_shopping_cart', views.GetShoppingCartView, basename='get_shopping_cart')
 router.register(r'recipes', views.RecipeView, basename='recipe')
+router.register(r'recipes/(?P<recipe_id>\d+)/favorite', views.FavouriteView, basename='favourite')
+router.register(r'recipes/(?P<recipe_id>\d+)/shopping_cart', views.ShoppingCartView, basename='shopping_cart')
 router.register(r'tags', views.TagView, 'tag')
 router.register(r'ingredients', views.IngredientView, 'ingredient')
 router.register(r'users/subscriptions', views.SubscriptionsView, basename='subscriptions')
 router.register(r'users', views.UserView, 'user')
-router.register(r'follow', views.FollowView, 'follow')
+router.register(r'users/(?P<user_id>\d+)/subscribe', views.FollowView, basename='subscribe')
 
+"""f_urls = [
+    path(
+        'users/<int:pk>/subscribe/', views.follow,
+        name='follow'),
+]"""
 
 urlpatterns = [
     # path('', include('recipes.urls')),
     path('admin/', admin.site.urls),
+    # path('api/', include(f_urls)),
     path('api/', include(router.urls)),
     path('api/', include('djoser.urls')),  # Работа с пользователями
     path('api/', include('djoser.urls.authtoken')),  # Работа с токенами
