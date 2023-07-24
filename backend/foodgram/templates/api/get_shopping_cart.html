@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="api/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000" />
+    <meta
+      name="description"
+      content="Продуктовый помощник"
+    />
+    <link rel="apple-touch-icon" href="api/logo192.png" />
+    <title>Продуктовый помощник</title>
+  </head>
+  <body>
+    <header>
+      <h1>Список продуктов</h1>
+    </header>
+    <main>
+        <div class="container py-5">
+          {% for string in list %}
+            <ul>
+              <li>{{string}}</li>
+            </ul> 
+          {% endfor %}
+        </div>
+    </main>
+  </body>
+</html> 

@@ -1,16 +1,29 @@
 from rest_framework import status, viewsets
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
+from io import BytesIO
+import csv, io
+from reportlab.pdfgen import canvas
+from django.template.loader import get_template
+from xhtml2pdf import pisa 
+from django.template import Context, Template
+import pdfkit
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from django.template import loader
+from django.http import FileResponse
+from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404
 
 from recipes.models import Ingredient, Favourite, Follow, Recipe, RecipeIngredient, ShoppingCart, Tag
 from user.models import User
-from .serializers import AddIngredientSerializer, GetShoppingCartSerializer, IngredientSerializer, FavouriteSerializer, FollowSerializer, RecipeSerializer, RegisterDataSerializer, ShoppingCartSerializer, SubscriptionsSerializer, TagSerializer, UserSerializer
+from .serializers import AddIngredientSerializer, GetShoppingCartSerializer, IngredientSerializer, FavouriteSerializer, FollowSerializer, RecipeSerializer, ShoppingCartSerializer, SubscriptionsSerializer, TagSerializer, UserListSerializer, CustomUserSerializer
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.decorators import api_view  # Импортировали декоратор
 from rest_framework.response import Response  # Импортировали класс Response
-from .permissions import IsOwnerOrReadOnly
+from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 from rest_framework.validators import ValidationError
+# RegisterDataSerializer, UserEditSerializer,
 
 
 class RecipeView(viewsets.ModelViewSet):
@@ -24,29 +37,41 @@ class RecipeView(viewsets.ModelViewSet):
 class TagView(viewsets.ModelViewSet):
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class IngredientView(viewsets.ModelViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
+    permission_classes = [IsAdminOrReadOnly]
 
 
-class UserView(viewsets.ModelViewSet): # (viewsets.ReadOnlyModelViewSet):
+class UserView(viewsets.ModelViewSet):
     # lookup_field = 'username'
+    http_method_names = ['get', 'post']
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    permission_classes = [permissions.AllowAny]
 
+    def get_serializer_class(self):
+        if self.action == 'retrieve' or self.action == 'list':
+            return UserListSerializer
+        return CustomUserSerializer
 
-@api_view(['POST'])
-@permission_classes([permissions.AllowAny])
-def register(request):
-    serializer = RegisterDataSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    serializer.save()
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    @action(
+        methods=['get'],
+        detail=False,
+        url_path='me',
+        permission_classes=[permissions.IsAuthenticated]
+    )
+    def users_own_profile(self, request):
+        user = request.user
+        serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class SubscriptionsView(viewsets.ModelViewSet):
     serializer_class = SubscriptionsSerializer
+    permission_classes=[permissions.IsAuthenticated]
 
     def get_queryset(self):
         return User.objects.filter(is_subscribed=True)
@@ -113,7 +138,7 @@ class FavouriteView(viewsets.ModelViewSet):
 class ShoppingCartView(viewsets.ModelViewSet):
     serializer_class = ShoppingCartSerializer
     queryset = ShoppingCart.objects.all()
-    # http_method_names = ['post', 'delete']
+    http_method_names = ['post', 'delete']
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
     #@action(methods=['create', 'delete'], detail=True)
@@ -135,14 +160,76 @@ class ShoppingCartView(viewsets.ModelViewSet):
 
 
 class GetShoppingCartView(viewsets.ModelViewSet):
-    serializer_class = GetShoppingCartSerializer
-    queryset = ShoppingCart.objects.all()
+    http_method_names = ['get']
+    """serializer_class = GetShoppingCartSerializer
+    # template_name = 'api/get_shopping_cart.html'
 
-    def perform_create(self, serializer):
-        # shopping_list = ShoppingCart.objects.filter(user=self.request.user)
-        serializer.save(user=self.request.user)
+    def get_queryset(self):
+        return ShoppingCart.objects.filter(user=self.request.user)"""
+
+    def list(self, request):
+        shopping_list = ShoppingCart.objects.filter(user=self.request.user)
+        shopping_dict = {}
+        measure_dict = {}
+        for cart in shopping_list:
+            for ingredient_data in cart.recipe.ingredients.all():
+                ingredient = ingredient_data.ingredient
+                amount = ingredient_data.amount
+                if ingredient.name not in shopping_dict.keys():
+                    shopping_dict[ingredient.name] = amount
+                    measure_dict[ingredient.name] = ingredient.measurement_unit
+                else:
+                    shopping_dict[ingredient.name] += amount
+
+        filename = 'get_shopping_cart.txt'
+        list = []
+        list.append('СПИСОК ИНГРЕДИЕНТОВ\n')
+        list.append('\n')
+        count = 0
+        for ingredient, amount in shopping_dict.items():
+            count += 1
+            string = f'{count}. {ingredient} ({measure_dict[ingredient]}) - {amount}\n'
+            list.append(string)
+
+        response = HttpResponse(list, content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+        return response
+
     
+        """template = 'api/get_shopping_cart.html'
+        context = {
+        'list': list,
+        }
+        return render(request, template, context)"""
 
+        
+        """template = get_template('api/get_shopping_cart.html')
+        context = {
+        'list': list,
+        }
+        html  = template.render(context)
+        result = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result, encoding='UTF-8') # , encoding='UTF-32'
+        if not pdf.err:
+            return HttpResponse(result.getvalue(), content_type='application/pdf')
+        return None"""
+
+
+        
+        
+        """pdfmetrics.registerFont(TTFont('OpenSans-Regular.ttf'))
+        pdfmetrics.registerFont(TTFont('VeraBd', 'VeraBd.ttf'))
+        pdfmetrics.registerFont(TTFont('VeraIt', 'VeraIt.ttf'))
+        pdfmetrics.registerFont(TTFont('VeraBI', 'VeraBI.ttf'))
+        
+        buffer = io.BytesIO()
+        p = canvas.Canvas(buffer)
+        p.setFont('Vera', 32)
+        p.drawString(100, 100, "Hello world dgdhрвпо.")
+        p.showPage()
+        p.save()
+        buffer.seek(0)
+        return FileResponse(buffer, as_attachment=True, filename="hello.pdf")"""
 
 
 """@api_view(['POST'])  # Применили декоратор и указали разрешённые методы
@@ -222,3 +309,33 @@ def get_serializer_class(self):
 
 """def perform_destroy(self, instance):
         instance.delete()"""
+
+"""def list(self, request):
+        shopping_list = ShoppingCart.objects.filter(user=self.request.user)
+        check_list = []
+        shopping_cart = []
+        for cart in shopping_list:
+            for ingredient_data in cart.recipe.ingredients.all():
+                ingredient = ingredient_data.ingredient
+                amount = ingredient_data.amount
+                if ingredient not in check_list:
+                    string = f'{ingredient.name} ({ingredient.measurement_unit}) - {amount}'
+                    shopping_cart.append(string)
+                    check_list.append(ingredient)
+                
+        return Response(shopping_cart)"""
+
+"""def list(self, request):
+        shopping_list = ShoppingCart.objects.filter(user=self.request.user)
+        shopping_cart = {}
+        for cart in shopping_list:
+            for ingredient_data in cart.recipe.ingredients.all():
+                ingredient = ingredient_data.ingredient
+                amount = ingredient_data.amount
+                if ingredient.name not in shopping_cart.keys():
+                    shopping_cart[ingredient.name] = amount
+                    # string = f'{ingredient.name} ({ingredient.measurement_unit}) - {amount}'
+                    # shopping_cart.append(string)
+                else:
+                    shopping_cart[ingredient.name] += amount
+        return Response(shopping_cart)"""

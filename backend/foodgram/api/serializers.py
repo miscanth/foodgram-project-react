@@ -1,33 +1,29 @@
 import base64
 
 import webcolors
+
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag, Follow, Favourite, ShoppingCart
 from user.models import User
 from rest_framework.validators import UniqueTogetherValidator
+from djoser.serializers import UserSerializer
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserListSerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = ('id', 'email', 'username', 'first_name',
+        fields = ('email', 'id', 'username', 'first_name',
                   'last_name', 'is_subscribed')
         model = User
 
 
-class RegisterDataSerializer(serializers.ModelSerializer):
-
-    def validate_username(self, value):
-        if value.lower() == 'me':
-            raise serializers.ValidationError("Username 'me' is not valid")
-        return value
+class CustomUserSerializer(UserSerializer):
 
     class Meta:
-        fields = ('email', 'username', 'first_name',
-                  'last_name', 'password')
         model = User
+        fields = ('email', 'id', 'username', 'first_name', 'last_name')
 
 
 class Hex2NameColor(serializers.Field):
@@ -151,8 +147,15 @@ class RecipeSerializer(serializers.ModelSerializer):
         return instance
 
 
+class ShortListRecipeSerializer(serializers.ModelSerializer):
+    """Вложенный сериализатор для укороченного обзора рецепта"""
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'cooking_time') # 'image',
+
+
 class SubscriptionsSerializer(serializers.ModelSerializer):
-    recipes = RecipeSerializer(many=True, read_only=True)
+    recipes = ShortListRecipeSerializer(many=True, read_only=True)
     recipes_count = serializers.SerializerMethodField()
 
     def get_recipes_count(self, obj):
@@ -259,19 +262,23 @@ class IngredientsInCartSerializer(serializers.ModelSerializer):
     """Список ингредиентов для приготовления рецептов из списка покупок"""
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
-    # amount = serializers.ReadOnlyField(source='amount')
-    
+
     class Meta:
         model = RecipeIngredient
         fields = ('name', 'measurement_unit', 'amount')
 
+
 class GetShoppingCartSerializer(serializers.ModelSerializer):
     """Список ингредиентов для приготовления рецептов из списка покупок"""
-    ingredients = AddIngredientSerializer(many=True, read_only=True, source='recipe.ingredients')
+    ingredients = IngredientsInCartSerializer(many=True, read_only=True, source='recipe.ingredients')
 
     class Meta:
         model = ShoppingCart
-        fields = ('recipe', 'user', 'ingredients')
+        fields = ('ingredients', )
+
+
+
+
 
 
     # author_id = self.context.get('view').kwargs.get('user_id')
