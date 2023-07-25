@@ -5,6 +5,12 @@ from django.db import models
 
 class User(AbstractUser):
     """Переопределенная модель Пользователя."""
+    ADMIN = 'admin'
+    USER = 'user'
+    ROLES = [
+        (ADMIN, 'Administrator'),
+        (USER, 'User'),
+    ]
 
     email = models.EmailField(
         verbose_name='Адрес электронной почты',
@@ -29,6 +35,16 @@ class User(AbstractUser):
         default=False,
         verbose_name='Статус подписки'
     )
+    role = models.CharField(
+        verbose_name='Роль',
+        max_length=50,
+        choices=ROLES,
+        default=USER
+    )
+
+    @property
+    def is_admin(self):
+        return self.role == self.ADMIN
 
     class Meta:
         ordering = ['id']

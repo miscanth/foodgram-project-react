@@ -146,6 +146,19 @@ class RecipeSerializer(serializers.ModelSerializer):
                 instance.save()
         return instance
 
+    """def delete(self, instance):
+        ingredients_data = validated_data.pop('ingredients')
+        recipe = Recipe.objects.create(**validated_data)
+        for ingredient_data in ingredients_data:
+            ingredient_object = ingredient_data.get('ingredient')
+            amount = ingredient_data.get('amount')
+            RecipeIngredient.objects.create(
+                ingredient=ingredient_object, amount=amount
+            )
+            recipe.ingredients.add(added_ingredients)
+            recipe.tags.set(tags)
+        return recipe"""
+
 
 class ShortListRecipeSerializer(serializers.ModelSerializer):
     """Вложенный сериализатор для укороченного обзора рецепта"""
