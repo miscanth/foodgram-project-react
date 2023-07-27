@@ -1,11 +1,12 @@
 from django.db import models
 
 from .validators import amount_validate, time_validate
+
 from user.models import User
 
 
-class Tag(models.Model): # ^[-a-zA-Z0-9_]+$ Уникальный слаг
-    # Класс для описания тэгов
+class Tag(models.Model):
+    """Класс для описания тэгов"""
     name = models.CharField(
         'Название',
         max_length=200,
@@ -22,7 +23,6 @@ class Tag(models.Model): # ^[-a-zA-Z0-9_]+$ Уникальный слаг
         return self.name
 
     class Meta:
-        # ordering = ('id',)
         verbose_name = 'Тэг'
         verbose_name_plural = 'Тэги'
 
@@ -42,7 +42,6 @@ class Ingredient(models.Model):
         return self.name
 
     class Meta:
-        # ordering = ('id',)
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
         constraints = [
@@ -55,12 +54,12 @@ class Ingredient(models.Model):
 
 class RecipeIngredient(models.Model):
     """Класс для описания количества определённого ингредиента в рецепте"""
-    # recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name = 'Рецепт')
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, related_name='recipe', verbose_name='Ингредиент')
+    ingredient = models.ForeignKey(
+        Ingredient, on_delete=models.CASCADE,
+        related_name='recipe', verbose_name='Ингредиент')
     amount = models.IntegerField(
         'Количество',
         validators=[amount_validate],
-        # required=True,
         blank=False,
         help_text='Количество продукта в указанных единицах измерения'
     )
@@ -70,8 +69,8 @@ class RecipeIngredient(models.Model):
         verbose_name_plural = 'Ингридиенты для рецепта'
 
     def __str__(self):
-        return f'{self.amount} {self.ingredient.measurement_unit} {self.ingredient.name}'
-
+        return (f'{self.amount} {self.ingredient.measurement_unit} '
+                f'{self.ingredient.name}')
 
 
 class Recipe(models.Model):
@@ -86,12 +85,8 @@ class Recipe(models.Model):
         'Название',
         max_length=200,
         help_text='Название рецепта')
-    image = models.ImageField( # Картинка, закодированная в Base64
+    image = models.ImageField(
         upload_to='recipes/images/',
-        # null=False,
-        # blank=False,
-        # default=None,
-        # unique=True
     )
     text = models.TextField(
         verbose_name='Описание',
@@ -99,16 +94,12 @@ class Recipe(models.Model):
     )
     tags = models.ManyToManyField(
         Tag,
-        # on_delete=models.SET_NULL,
-        # null=True,
         related_name='recipes',
         verbose_name='Список id тегов',
         help_text='Список id тегов, к которым относится рецепт'
     )
     ingredients = models.ManyToManyField(
         RecipeIngredient,
-        # through='RecipeIngredient',
-        # on_delete=models.CASCADE,
         related_name='recipes',
         verbose_name='Список ингредиентов',
         help_text='Продукты для приготовления блюда по рецепту'

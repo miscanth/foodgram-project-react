@@ -1,19 +1,11 @@
-from rest_framework import filters, permissions, status, viewsets
-from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.response import Response
-from rest_framework.validators import ValidationError
-
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.serializers import SetPasswordSerializer
-from io import BytesIO
-import csv, io
-from reportlab.pdfgen import canvas
-from xhtml2pdf import pisa 
-import pdfkit
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
+from rest_framework import filters, permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.validators import ValidationError
 
 from .filters import RecipeFilter
 from .permissions import (IsAdmin, IsAuthorOrAdmin,
@@ -24,7 +16,8 @@ from .serializers import (ListRecipeSerializer, IngredientSerializer,
                           SubscriptionsSerializer, TagSerializer,
                           UserSerializer, UserRegistrationSerializer)
 
-from recipes.models import Ingredient, Favourite, Follow, Recipe, ShoppingCart, Tag
+from recipes.models import (Ingredient, Favourite, Follow,
+                            Recipe, ShoppingCart, Tag)
 from user.models import User
 
 
@@ -96,20 +89,15 @@ class UserView(viewsets.ModelViewSet):
         permission_classes=[permissions.IsAuthenticated]
     )
     def set_password(self, request, *args, **kwargs):
-        """serializer = SetPasswordSerializer(request.data)
+        serializer = SetPasswordSerializer(request.data)
         self.request.user.set_password(serializer.data['new_password'])
         self.request.user.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)"""
-        serializer = SetPasswordSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.request.user.set_password(serializer.data['new_password'])
-        self.request.user.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class SubscriptionsView(viewsets.ModelViewSet):
     serializer_class = SubscriptionsSerializer
-    permission_classes=[permissions.IsAuthenticated, IsAuthor]
+    permission_classes = [permissions.IsAuthenticated, IsAuthor]
     http_method_names = ['get']
 
     def get_queryset(self):
@@ -125,20 +113,20 @@ class FollowView(viewsets.ModelViewSet):
     http_method_names = ['post', 'delete']
     permission_classes = [permissions.IsAuthenticated, IsAuthor]
 
-    #@action(methods=['create', 'delete'], detail=True)
     def perform_create(self, serializer):
         author = get_object_or_404(User, id=self.kwargs.get('user_id'))
         serializer.save(user=self.request.user, author=author)
 
-    # @action(detail=True, methods=['DELETE'])
     def delete(self, serializer, *args, **kwargs):
         author = get_object_or_404(User, id=self.kwargs.get('user_id'))
         if (
                 self.request.method == 'DELETE'
-                and not Follow.objects.filter(user=self.request.user, author=author).exists()
+                and not Follow.objects.filter(
+                    user=self.request.user, author=author).exists()
         ):
             raise ValidationError('Вы уже отписались от этого пользователя!')
-        follow = get_object_or_404(Follow, user=self.request.user, author=author)
+        follow = get_object_or_404(
+            Follow, user=self.request.user, author=author)
         follow.delete()
         setattr(author, 'is_subscribed', False)
         author.save()
@@ -151,22 +139,25 @@ class FavouriteView(viewsets.ModelViewSet):
     http_method_names = ['post', 'delete']
     permission_classes = [permissions.IsAuthenticated]
 
-    #@action(methods=['create', 'delete'], detail=True)
     def perform_create(self, serializer):
         recipe = get_object_or_404(Recipe, id=self.kwargs.get('recipe_id'))
         serializer.save(user=self.request.user, recipe=recipe)
 
-    # @action(detail=True, methods=['DELETE'])
     def delete(self, serializer, *args, **kwargs):
         recipe = get_object_or_404(Recipe, id=self.kwargs.get('recipe_id'))
         if (
                 self.request.method == 'DELETE'
-                and not Favourite.objects.filter(user=self.request.user, recipe=recipe).exists()
+                and not Favourite.objects.filter(
+                    user=self.request.user, recipe=recipe).exists()
         ):
             raise ValidationError('Вы уже удалили этот рецепт из избранного!')
-        favourite = get_object_or_404(Favourite, user=self.request.user, recipe=recipe)
+        favourite = get_object_or_404(
+            Favourite, user=self.request.user, recipe=recipe)
         favourite.delete()
-        return Response('Рецепт успешно удалён из избранного', status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            'Рецепт успешно удалён из избранного',
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 
 class ShoppingCartView(viewsets.ModelViewSet):
@@ -175,22 +166,26 @@ class ShoppingCartView(viewsets.ModelViewSet):
     http_method_names = ['post', 'delete']
     permission_classes = [permissions.IsAuthenticated]
 
-    #@action(methods=['create', 'delete'], detail=True)
     def perform_create(self, serializer):
         recipe = get_object_or_404(Recipe, id=self.kwargs.get('recipe_id'))
         serializer.save(user=self.request.user, recipe=recipe)
 
-    # @action(detail=True, methods=['DELETE'])
     def delete(self, serializer, *args, **kwargs):
         recipe = get_object_or_404(Recipe, id=self.kwargs.get('recipe_id'))
         if (
                 self.request.method == 'DELETE'
-                and not ShoppingCart.objects.filter(user=self.request.user, recipe=recipe).exists()
+                and not ShoppingCart.objects.filter(
+                    user=self.request.user, recipe=recipe).exists()
         ):
-            raise ValidationError('Вы уже удалили этот рецепт из списка покупок!')
-        shopping_cart = get_object_or_404(ShoppingCart, user=self.request.user, recipe=recipe)
+            raise ValidationError(
+                'Вы уже удалили этот рецепт из списка покупок!')
+        shopping_cart = get_object_or_404(
+            ShoppingCart, user=self.request.user, recipe=recipe)
         shopping_cart.delete()
-        return Response('Рецепт успешно удалён из списка покупок!', status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            'Рецепт успешно удалён из списка покупок!',
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 
 class GetShoppingCartView(viewsets.ModelViewSet):
@@ -218,23 +213,11 @@ class GetShoppingCartView(viewsets.ModelViewSet):
         count = 0
         for ingredient, amount in shopping_dict.items():
             count += 1
-            string = f'{count}. {ingredient} ({measure_dict[ingredient]}) - {amount}\n'
+            string = (f'{count}. {ingredient} ({measure_dict[ingredient]}) '
+                      f'- {amount}\n')
             list.append(string)
 
         response = HttpResponse(list, content_type='text/plain')
-        response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+        response['Content-Disposition'] = (
+            'attachment; filename={0}'.format(filename))
         return response
-
-        """template = get_template('api/get_shopping_cart.html')
-        context = {
-        'list': list,
-        }
-        html  = template.render(context)
-        result = BytesIO()
-        pdf = pisa.pisaDocument(BytesIO(html.encode('UTF-8')), result, encoding='UTF-8')
-        if not pdf.err:
-            return HttpResponse(result.getvalue(), content_type='application/pdf')
-        return None"""
-
-
-
