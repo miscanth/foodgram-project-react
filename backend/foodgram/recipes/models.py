@@ -32,7 +32,7 @@ class Ingredient(models.Model):
     name = models.CharField(
         'Название',
         max_length=200,
-        unique=True,
+        # unique=True,
         help_text='Название ингредиента')
     measurement_unit = models.CharField(
         max_length=200,
@@ -45,6 +45,12 @@ class Ingredient(models.Model):
         # ordering = ('id',)
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'measurement_unit'],
+                name='unique_name_measurement_unit'
+            )
+        ]
 
 
 class RecipeIngredient(models.Model):

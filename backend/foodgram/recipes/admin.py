@@ -6,12 +6,16 @@ class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'name',
-        'author'
+        'author',
+        'fav_count'
     )
-    # list_editable = ('tags',)
     search_fields = ('text',)
     list_filter = ('name', 'author', 'tags')
     empty_value_display = '-пусто-'
+
+    def fav_count(self, obj):
+        favor = Favourite.objects.filter(recipe_id=obj.id)
+        return favor.count()
 
 
 class FollowAdmin(admin.ModelAdmin):

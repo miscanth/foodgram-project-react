@@ -12,8 +12,11 @@ pytest-pythonpath==0.7.3
 PyYAML==6.0
 python-dotenv==1.0.0
 gunicorn==20.1.0
+django-cors-headers==3.13.0
 psycopg2-binary==2.9.3
 webcolors-1.13
+django-filter==23.2
+
 reportlab-4.0.4
 wkhtmltopdf-0.2
 pdfkit==1.0.0

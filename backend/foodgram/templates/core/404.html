@@ -13,20 +13,14 @@
       content="Продуктовый помощник"
     />
     <link rel="apple-touch-icon" href="api/logo192.png" />
-    <title>Продуктовый помощник</title>
+    <title>Custom 404</title>
   </head>
   <body>
     <header>
-      <h1>Список продуктов</h1>
+        <h1>Custom 404</h1>
+        <p>Страницы с адресом {{ path }} не существует</p>
     </header>
     <main>
-        <div class="container py-5">
-          {% for string in list %}
-            <ul>
-              <li>{{string}}</li>
-            </ul> 
-          {% endfor %}
-        </div>
     </main>
   </body>
 </html>
