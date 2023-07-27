@@ -54,7 +54,10 @@ python3.9 manage.py runserver
 
 ### Примеры запросов:
 
-Пример GET-запроса с токеном пользователя holly: Просмотр рецепта с id 1. *GET .../api/recipes/1/*
+Пример GET-запроса с токеном пользователя holly: Просмотр рецепта с id 1.
+
+*GET .../api/recipes/1/*
+
 Пример ответа:
 ```
 {
@@ -97,7 +100,9 @@ python3.9 manage.py runserver
     "cooking_time": 12
 }
 ```
-Пример POST-запроса с токеном пользователя holly: подписка на пользователя с id 7. *POST .../api/users/7/subscribe/*
+Пример POST-запроса с токеном пользователя holly: подписка на пользователя с id 7.
+
+*POST .../api/users/7/subscribe/*
 
 Пример ответа:
 ```
