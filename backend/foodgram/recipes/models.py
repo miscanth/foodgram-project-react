@@ -19,12 +19,13 @@ class Tag(models.Model):
                             db_index=True,
                             help_text=('Индетификатор тэга'))
 
-    def __str__(self):
-        return self.name
-
     class Meta:
+        ordering = ('name',)
         verbose_name = 'Тэг'
         verbose_name_plural = 'Тэги'
+
+    def __str__(self):
+        return self.name
 
 
 class Ingredient(models.Model):
@@ -38,10 +39,8 @@ class Ingredient(models.Model):
         max_length=200,
         help_text='Единица измерения')
 
-    def __str__(self):
-        return self.name
-
     class Meta:
+        ordering = ('id',)
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
         constraints = [
@@ -51,13 +50,16 @@ class Ingredient(models.Model):
             )
         ]
 
+    def __str__(self):
+        return self.name
+
 
 class RecipeIngredient(models.Model):
     """Класс для описания количества определённого ингредиента в рецепте"""
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE,
         related_name='recipe', verbose_name='Ингредиент')
-    amount = models.IntegerField(
+    amount = models.PositiveSmallIntegerField(
         'Количество',
         validators=[amount_validate],
         blank=False,
@@ -65,6 +67,7 @@ class RecipeIngredient(models.Model):
     )
 
     class Meta:
+        ordering = ('-id',)
         verbose_name = 'Ингридиент для рецепта'
         verbose_name_plural = 'Ингридиенты для рецепта'
 
@@ -104,7 +107,7 @@ class Recipe(models.Model):
         verbose_name='Список ингредиентов',
         help_text='Продукты для приготовления блюда по рецепту'
     )
-    cooking_time = models.IntegerField(
+    cooking_time = models.PositiveSmallIntegerField(
         'Время приготовления',
         validators=[time_validate],
         help_text='Время приготовления в минутах')
@@ -113,9 +116,6 @@ class Recipe(models.Model):
         auto_now_add=True,
         help_text='Дата устанавливается автоматически'
     )
-
-    def __str__(self):
-        return self.name
 
     class Meta:
         ordering = ('-pub_date',)
@@ -127,6 +127,9 @@ class Recipe(models.Model):
                 name='unique_name_author'
             )
         ]
+
+    def __str__(self):
+        return self.name
 
 
 class Follow(models.Model):
@@ -165,7 +168,7 @@ class Favourite(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='user_favourite_list',
+        related_name='favorites',
         verbose_name='Подписчик'
     )
     recipe = models.ForeignKey(
@@ -173,7 +176,7 @@ class Favourite(models.Model):
         blank=True,
         null=True,
         on_delete=models.CASCADE,
-        related_name='favourite_recipe',
+        related_name='favors',
         verbose_name='Понравившийся рецепт'
     )
     pub_date = models.DateTimeField(

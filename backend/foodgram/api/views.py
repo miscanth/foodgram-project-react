@@ -2,6 +2,8 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.serializers import SetPasswordSerializer
+from djoser.views import (UserViewSet
+                          as BaseUserSetPasswordViewSet)
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -44,7 +46,8 @@ class RecipeView(viewsets.ModelViewSet):
 class TagView(viewsets.ModelViewSet):
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
-    permission_classes = [IsAdmin]
+    #permission_classes = [IsAdmin]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class IngredientView(viewsets.ModelViewSet):
@@ -53,6 +56,24 @@ class IngredientView(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = (filters.SearchFilter,)
     search_fields = ('^name',)
+
+
+"""class UserSetPasswordView(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = SetPasswordSerializer
+    http_method_names = ['post']
+
+    def create(self, request, *args, **kwargs):
+        serializer = SetPasswordSerializer(request.data)
+        current_password = serializer.data['current_password']
+        is_password_valid = self.request.user.check_password(current_password)
+        if is_password_valid:
+            self.request.user.set_password(serializer.data['new_password'])
+            self.request.user.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            raise ValidationError('invalid_password')"""
 
 
 class UserView(viewsets.ModelViewSet):
@@ -90,10 +111,14 @@ class UserView(viewsets.ModelViewSet):
     )
     def set_password(self, request, *args, **kwargs):
         serializer = SetPasswordSerializer(request.data)
-        # serializer.is_valid(raise_exception=True)
-        self.request.user.set_password(serializer.data['new_password'])
-        self.request.user.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        current_password = serializer.data['current_password']
+        is_password_valid = self.request.user.check_password(current_password)
+        if is_password_valid:
+            self.request.user.set_password(serializer.data['new_password'])
+            self.request.user.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            raise ValidationError('invalid_password')
 
 
 class SubscriptionsView(viewsets.ModelViewSet):

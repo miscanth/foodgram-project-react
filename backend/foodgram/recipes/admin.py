@@ -4,6 +4,11 @@ from .models import (Ingredient, Favourite, Follow, Recipe,
                      RecipeIngredient, ShoppingCart, Tag)
 
 
+class RecipeIngredientInLine(admin.TabularInline):
+    model = Recipe.ingredients.through
+    min_num = 1
+
+
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         'id',
@@ -14,10 +19,11 @@ class RecipeAdmin(admin.ModelAdmin):
     search_fields = ('text',)
     list_filter = ('name', 'author', 'tags')
     empty_value_display = '-пусто-'
+    inlines = (RecipeIngredientInLine, )
 
     def fav_count(self, obj):
-        favor = Favourite.objects.filter(recipe_id=obj.id)
-        return favor.count()
+        recipe = Recipe.objects.get(id=obj.id)
+        return recipe.favors.count()
 
 
 class FollowAdmin(admin.ModelAdmin):

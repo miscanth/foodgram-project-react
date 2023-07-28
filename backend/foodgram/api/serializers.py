@@ -205,18 +205,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         return ListRecipeSerializer(
             context=self.context).to_representation(data)
 
-    """def destroy(self, instance, validated_data):
-        # ingredients_data = validated_data.get('ingredients')
-        ingredients_data = instance.ingredients
-        for ingredient_data in ingredients_data:
-            ingredient_object = ingredient_data.get('ingredient')
-            amount = ingredient_data.get('amount')
-            down_ingredients = get_object_or_404(RecipeIngredient,
-                ingredient=ingredient_object, amount=amount
-            )
-            down_ingredients.delete()
-        instance.delete()"""
-
 
 class ShortListRecipeSerializer(serializers.ModelSerializer):
     """Вложенный сериализатор для укороченного обзора рецепта"""
