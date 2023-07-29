@@ -15,8 +15,6 @@ router.register(r'recipes/(?P<recipe_id>\d+)/shopping_cart',
                 views.ShoppingCartView, basename='shopping_cart')
 router.register(r'tags', views.TagView, 'tag')
 router.register(r'ingredients', views.IngredientView, 'ingredient')
-"""router.register(r'users/set_password',
-                views.UserSetPasswordView, basename='SetPassword')"""
 router.register(r'users/subscriptions',
                 views.SubscriptionsView, basename='subscriptions')
 router.register(r'users', views.UserView, 'user')

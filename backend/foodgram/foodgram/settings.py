@@ -119,6 +119,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+QUANTITY_MIN = 1
+QUANTITY_MAX = 32000
+
 AUTH_USER_MODEL = 'user.User'
 
 # Default primary key field type
@@ -139,3 +142,4 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 6,
 
 }
+ 

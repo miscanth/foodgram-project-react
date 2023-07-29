@@ -2,15 +2,14 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.serializers import SetPasswordSerializer
-from djoser.views import (UserViewSet
-                          as BaseUserSetPasswordViewSet)
+
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.validators import ValidationError
 
 from .filters import RecipeFilter
-from .permissions import (IsAdmin, IsAuthorOrAdmin,
+from .permissions import (IsAuthorOrAdmin,
                           IsAuthor, ReadOnly, IsAdminOrReadOnly)
 from .serializers import (ListRecipeSerializer, IngredientSerializer,
                           FavouriteSerializer, FollowSerializer,
@@ -19,7 +18,7 @@ from .serializers import (ListRecipeSerializer, IngredientSerializer,
                           UserSerializer, UserRegistrationSerializer)
 
 from recipes.models import (Ingredient, Favourite, Follow,
-                            Recipe, ShoppingCart, Tag)
+                            Recipe, RecipeIngredient, ShoppingCart, Tag)
 from user.models import User
 
 
@@ -46,7 +45,6 @@ class RecipeView(viewsets.ModelViewSet):
 class TagView(viewsets.ModelViewSet):
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
-    #permission_classes = [IsAdmin]
     permission_classes = [IsAdminOrReadOnly]
 
 
@@ -56,24 +54,6 @@ class IngredientView(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = (filters.SearchFilter,)
     search_fields = ('^name',)
-
-
-"""class UserSetPasswordView(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = SetPasswordSerializer
-    http_method_names = ['post']
-
-    def create(self, request, *args, **kwargs):
-        serializer = SetPasswordSerializer(request.data)
-        current_password = serializer.data['current_password']
-        is_password_valid = self.request.user.check_password(current_password)
-        if is_password_valid:
-            self.request.user.set_password(serializer.data['new_password'])
-            self.request.user.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            raise ValidationError('invalid_password')"""
 
 
 class UserView(viewsets.ModelViewSet):
@@ -147,8 +127,8 @@ class FollowView(viewsets.ModelViewSet):
         author = get_object_or_404(User, id=self.kwargs.get('user_id'))
         if (
                 self.request.method == 'DELETE'
-                and not Follow.objects.filter(
-                    user=self.request.user, author=author).exists()
+                and not self.request.user.follower.filter(
+                    author=author).exists()
         ):
             raise ValidationError('Вы уже отписались от этого пользователя!')
         follow = get_object_or_404(
@@ -173,8 +153,7 @@ class FavouriteView(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, id=self.kwargs.get('recipe_id'))
         if (
                 self.request.method == 'DELETE'
-                and not Favourite.objects.filter(
-                    user=self.request.user, recipe=recipe).exists()
+                and not self.request.user.favorites.filter(recipe=recipe)
         ):
             raise ValidationError('Вы уже удалили этот рецепт из избранного!')
         favourite = get_object_or_404(
@@ -200,8 +179,8 @@ class ShoppingCartView(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, id=self.kwargs.get('recipe_id'))
         if (
                 self.request.method == 'DELETE'
-                and not ShoppingCart.objects.filter(
-                    user=self.request.user, recipe=recipe).exists()
+                and not self.request.user.shopping_cart.filter(
+                    recipe=recipe).exists()
         ):
             raise ValidationError(
                 'Вы уже удалили этот рецепт из списка покупок!')
@@ -223,9 +202,11 @@ class GetShoppingCartView(viewsets.ModelViewSet):
         shopping_dict = {}
         measure_dict = {}
         for cart in shopping_list:
-            for ingredient_data in cart.recipe.ingredients.all():
-                ingredient = ingredient_data.ingredient
-                amount = ingredient_data.amount
+            for ingredient in cart.recipe.ingredients.all():
+                recipe_ingredient = get_object_or_404(
+                    RecipeIngredient, recipe=cart.recipe,
+                    ingredient=ingredient)
+                amount = recipe_ingredient.amount
                 if ingredient.name not in shopping_dict.keys():
                     shopping_dict[ingredient.name] = amount
                     measure_dict[ingredient.name] = ingredient.measurement_unit

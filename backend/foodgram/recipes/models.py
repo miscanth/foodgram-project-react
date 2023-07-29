@@ -54,28 +54,6 @@ class Ingredient(models.Model):
         return self.name
 
 
-class RecipeIngredient(models.Model):
-    """Класс для описания количества определённого ингредиента в рецепте"""
-    ingredient = models.ForeignKey(
-        Ingredient, on_delete=models.CASCADE,
-        related_name='recipe', verbose_name='Ингредиент')
-    amount = models.PositiveSmallIntegerField(
-        'Количество',
-        validators=[amount_validate],
-        blank=False,
-        help_text='Количество продукта в указанных единицах измерения'
-    )
-
-    class Meta:
-        ordering = ('-id',)
-        verbose_name = 'Ингридиент для рецепта'
-        verbose_name_plural = 'Ингридиенты для рецепта'
-
-    def __str__(self):
-        return (f'{self.amount} {self.ingredient.measurement_unit} '
-                f'{self.ingredient.name}')
-
-
 class Recipe(models.Model):
     """Класс для описания рецептов"""
     author = models.ForeignKey(
@@ -102,7 +80,8 @@ class Recipe(models.Model):
         help_text='Список id тегов, к которым относится рецепт'
     )
     ingredients = models.ManyToManyField(
-        RecipeIngredient,
+        Ingredient,
+        through='RecipeIngredient',
         related_name='recipes',
         verbose_name='Список ингредиентов',
         help_text='Продукты для приготовления блюда по рецепту'
@@ -130,6 +109,31 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class RecipeIngredient(models.Model):
+    """Класс для описания количества определённого ингредиента в рецепте"""
+    ingredient = models.ForeignKey(
+        Ingredient, on_delete=models.CASCADE,
+        related_name='recipe', verbose_name='Ингредиент')
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE,
+        related_name='recipe_ingredients', verbose_name='Рецепт')
+    amount = models.PositiveSmallIntegerField(
+        'Количество',
+        validators=[amount_validate],
+        blank=False,
+        help_text='Количество продукта в указанных единицах измерения'
+    )
+
+    class Meta:
+        ordering = ('-id',)
+        verbose_name = 'Ингридиент для рецепта'
+        verbose_name_plural = 'Ингридиенты для рецепта'
+
+    def __str__(self):
+        return (f'{self.amount} {self.ingredient.measurement_unit} '
+                f'{self.ingredient.name}')
 
 
 class Follow(models.Model):
@@ -199,7 +203,7 @@ class ShoppingCart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='user_shopping_cart',
+        related_name='shopping_cart',
         verbose_name='Подписчик'
     )
     recipe = models.ForeignKey(
@@ -207,7 +211,7 @@ class ShoppingCart(models.Model):
         blank=True,
         null=True,
         on_delete=models.CASCADE,
-        related_name='recipe_shopping_cart',
+        related_name='shopping_cart',
         verbose_name='Рецепт, добавленный в список покупок'
     )
     pub_date = models.DateTimeField(
