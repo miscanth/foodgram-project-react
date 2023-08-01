@@ -74,7 +74,7 @@ class ListAddIngredientSerializer(serializers.ModelSerializer):
     """Вложенный сериализатор для поля рецепта
     ingredients с развёрнутой информацией"""
     id = serializers.ReadOnlyField(source='ingredient.id')
-    ingredient = serializers.ReadOnlyField(source='ingredient.name')
+    name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
         source='ingredient.measurement_unit')
     amount = serializers.IntegerField(
@@ -82,7 +82,7 @@ class ListAddIngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecipeIngredient
-        fields = ('id', 'ingredient', 'measurement_unit', 'amount')
+        fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
 class ListRecipeSerializer(serializers.ModelSerializer):
@@ -118,7 +118,7 @@ class ListRecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ('id', 'tags', 'author', 'ingredients',
                   'is_favorited', 'is_in_shopping_cart',
-                  'name', 'text', 'image', 'cooking_time')
+                  'name', 'image', 'text', 'cooking_time')
         read_only_fields = ('author',)
         validators = [
             UniqueTogetherValidator(
@@ -148,21 +148,21 @@ class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField(required=False, allow_null=True)
     ingredients = AddIngredientSerializer(
         many=True, source='ingredients.recipe_ingredients')
-    author = serializers.PrimaryKeyRelatedField(
-        read_only=True, default=serializers.CurrentUserDefault())
+    """author = serializers.PrimaryKeyRelatedField(
+        read_only=True, default=serializers.CurrentUserDefault())"""
     cooking_time = serializers.IntegerField(
         max_value=settings.QUANTITY_MAX, min_value=settings.QUANTITY_MIN)
 
     class Meta:
         model = Recipe
-        fields = ('tags', 'author', 'ingredients', 'name',
-                  'text', 'image', 'cooking_time')
-        validators = [
+        fields = ('ingredients', 'tags', 'image', 'name',
+                  'text', 'cooking_time')
+        """validators = [
             UniqueTogetherValidator(
                 queryset=Recipe.objects.all(),
                 fields=('name', 'author')
             )
-        ]
+        ]"""
 
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')

@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.validators import ValidationError
 
 from .filters import RecipeFilter
-from .permissions import (IsAuthorOrAdmin,
+from .permissions import (IsAdmin, IsAuthorOrAdmin,
                           IsAuthor, ReadOnly, IsAdminOrReadOnly)
 from .serializers import (ListRecipeSerializer, IngredientSerializer,
                           FavouriteSerializer, FollowSerializer,
@@ -24,8 +24,8 @@ from user.models import User
 
 class RecipeView(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    permission_classes = [permissions.IsAuthenticated, IsAuthorOrAdmin]
-    filter_backends = (DjangoFilterBackend,)
+    permission_classes = [permissions.IsAuthenticated, IsAuthorOrAdmin] 
+    filter_backends = (DjangoFilterBackend, )
     filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
@@ -45,15 +45,17 @@ class RecipeView(viewsets.ModelViewSet):
 class TagView(viewsets.ModelViewSet):
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [permissions.AllowAny]
+    pagination_class = None
 
 
 class IngredientView(viewsets.ModelViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [permissions.AllowAny]
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('^name',)
+    search_fields = ['name', ]
+    pagination_class = None
 
 
 class UserView(viewsets.ModelViewSet):
@@ -118,6 +120,7 @@ class FollowView(viewsets.ModelViewSet):
     queryset = Follow.objects.all()
     http_method_names = ['post', 'delete']
     permission_classes = [permissions.IsAuthenticated, IsAuthor]
+    pagination_class = None
 
     def perform_create(self, serializer):
         author = get_object_or_404(User, id=self.kwargs.get('user_id'))
@@ -144,6 +147,7 @@ class FavouriteView(viewsets.ModelViewSet):
     queryset = Favourite.objects.all()
     http_method_names = ['post', 'delete']
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = None
 
     def perform_create(self, serializer):
         recipe = get_object_or_404(Recipe, id=self.kwargs.get('recipe_id'))
@@ -170,6 +174,7 @@ class ShoppingCartView(viewsets.ModelViewSet):
     queryset = ShoppingCart.objects.all()
     http_method_names = ['post', 'delete']
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = None
 
     def perform_create(self, serializer):
         recipe = get_object_or_404(Recipe, id=self.kwargs.get('recipe_id'))

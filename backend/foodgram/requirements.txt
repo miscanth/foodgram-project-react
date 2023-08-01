@@ -14,5 +14,6 @@ python-dotenv==1.0.0
 gunicorn==20.1.0
 django-cors-headers==3.13.0
 psycopg2-binary==2.9.3
-webcolors-1.13
+webcolors==1.13
 django-filter==23.2
+ 
