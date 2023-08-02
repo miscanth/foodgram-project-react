@@ -9,10 +9,6 @@ router = routers.DefaultRouter()
 router.register(r'recipes/download_shopping_cart',
                 views.GetShoppingCartView, basename='get_shopping_cart')
 router.register(r'recipes', views.RecipeView, basename='recipe')
-router.register(r'recipes/(?P<recipe_id>\d+)/favorite',
-                views.FavouriteView, basename='favourite')
-router.register(r'recipes/(?P<recipe_id>\d+)/shopping_cart',
-                views.ShoppingCartView, basename='shopping_cart')
 router.register(r'tags', views.TagView, 'tag')
 router.register(r'ingredients', views.IngredientView, 'ingredient')
 router.register(r'users/subscriptions',
@@ -26,7 +22,6 @@ urlpatterns = [
     path('api/auth/', include('djoser.urls.authtoken')),
     path('api/', include(router.urls)),
     path('api/', include('djoser.urls')),
-    
 ]
 
 handler404 = 'core.views.page_not_found'

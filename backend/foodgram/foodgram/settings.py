@@ -7,19 +7,11 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-st6-xl-*1h10og08m6xzxovt2-u=2qh7e-vvi2k1y^u%2h#%v6'
-# SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = True
-# DEBUG = os.getenv('DEBUG', 'False') == 'True'
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    '[::1]',
-    'testserver',
-]
-# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(', ')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(', ')
 
 INSTALLED_APPS = [
     'recipes.apps.RecipesConfig',
