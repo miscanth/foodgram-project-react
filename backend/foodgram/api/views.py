@@ -177,17 +177,17 @@ class RecipeView(viewsets.ModelViewSet):
                 and not request.user.favorites.filter(recipe=recipe).exists()
         ):
             return Response(
-                    {'detail': 'Рецепт не был добавлен в избранное'
-                     'Его нельзя удалить.'},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+                {'detail': 'Рецепт не был добавлен в избранное'
+                'Его нельзя удалить.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         favourite = get_object_or_404(
             Favourite, user=self.request.user, recipe=recipe)
         favourite.delete()
         return Response(
-                {'detail': 'Рецепт успешно удален из избранного.'},
-                status=status.HTTP_204_NO_CONTENT,
-            )
+            {'detail': 'Рецепт успешно удален из избранного.'},
+            status=status.HTTP_204_NO_CONTENT,
+        )
 
     @action(
         detail=True,
