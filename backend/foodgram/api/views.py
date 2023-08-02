@@ -178,7 +178,7 @@ class RecipeView(viewsets.ModelViewSet):
         ):
             return Response(
                 {'detail': 'Рецепт не был добавлен в избранное'
-                'Его нельзя удалить.'},
+                 ' Его нельзя удалить.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         favourite = get_object_or_404(
