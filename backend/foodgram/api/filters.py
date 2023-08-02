@@ -1,5 +1,5 @@
 import django_filters
-from recipes.models import Recipe
+from recipes.models import Ingredient, Recipe
 
 
 class RecipeFilter(django_filters.FilterSet):
@@ -27,3 +27,13 @@ class RecipeFilter(django_filters.FilterSet):
     class Meta:
         model = Recipe
         fields = ['author', 'tags', 'is_favorited', 'is_in_shopping_cart']
+
+
+class IngredientFilter(django_filters.FilterSet):
+    """Поиск по названию ингредиента."""
+    name = django_filters.CharFilter(lookup_expr='istartswith')
+
+    class Meta:
+        model = Ingredient
+        fields = ('name', )
+

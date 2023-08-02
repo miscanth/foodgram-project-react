@@ -8,7 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.validators import ValidationError
 
-from .filters import RecipeFilter
+from .filters import IngredientFilter, RecipeFilter
 from .permissions import (IsAuthorOrAdmin,
                           IsAuthor, ReadOnly, IsAdminOrReadOnly)
 from .serializers import (ListRecipeSerializer, IngredientSerializer,
@@ -34,9 +34,12 @@ class IngredientView(viewsets.ModelViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
     permission_classes = [permissions.AllowAny]
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['^name', ]
+    """filter_backends = [filters.SearchFilter]
+    search_fields = ['^name', ]"""
     pagination_class = None
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientFilter
+    search_fields = ('^name',)
 
 
 class UserView(viewsets.ModelViewSet):
