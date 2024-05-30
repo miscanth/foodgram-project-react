@@ -1,10 +1,9 @@
 from http import HTTPStatus
 
 from django.core.cache import cache
-from django.test import TestCase, Client
+from django.test import Client, TestCase
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from rest_framework.authtoken.models import Token
-
-from recipes.models import Recipe, Tag, Ingredient, RecipeIngredient
 from user.models import User
 
 

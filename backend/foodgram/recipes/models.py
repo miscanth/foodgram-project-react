@@ -1,8 +1,7 @@
 from django.db import models
+from user.models import User
 
 from .validators import amount_validate, time_validate
-
-from user.models import User
 
 
 class Tag(models.Model):
