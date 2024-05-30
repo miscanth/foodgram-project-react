@@ -2,23 +2,20 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.serializers import SetPasswordSerializer
-
+from recipes.models import (Favourite, Follow, Ingredient, Recipe,
+                            RecipeIngredient, ShoppingCart, Tag)
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.validators import ValidationError
+from user.models import User
 
 from .filters import IngredientFilter, RecipeFilter
-from .permissions import (IsAuthorOrAdmin,
-                          IsAuthor, ReadOnly, IsAdminOrReadOnly)
-from .serializers import (ListRecipeSerializer, IngredientSerializer,
-                          FollowSerializer, RecipeSerializer,
+from .permissions import IsAdminOrReadOnly, IsAuthor, IsAuthorOrAdmin, ReadOnly
+from .serializers import (FollowSerializer, IngredientSerializer,
+                          ListRecipeSerializer, RecipeSerializer,
                           SubscriptionsSerializer, TagSerializer,
-                          UserSerializer, UserRegistrationSerializer)
-
-from recipes.models import (Ingredient, Favourite, Follow,
-                            Recipe, RecipeIngredient, ShoppingCart, Tag)
-from user.models import User
+                          UserRegistrationSerializer, UserSerializer)
 
 
 class TagView(viewsets.ModelViewSet):

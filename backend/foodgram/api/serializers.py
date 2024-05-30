@@ -1,17 +1,14 @@
 import base64
 
+import webcolors
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
+from djoser.serializers import \
+    UserCreateSerializer as BaseUserRegistrationSerializer
+from recipes.models import Follow, Ingredient, Recipe, RecipeIngredient, Tag
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
-
-from djoser.serializers import (UserCreateSerializer
-                                as BaseUserRegistrationSerializer)
-import webcolors
-
-from recipes.models import (Ingredient, Recipe, RecipeIngredient,
-                            Tag, Follow)
 from user.models import User
 
 
