@@ -18,8 +18,8 @@ router.register(r'users/(?P<user_id>\d+)/subscribe', views.FollowView,
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
-    path('api/', include('djoser.urls')),  # Работа с пользователями
-    path('api/', include('djoser.urls.authtoken')),  # Работа с токенами
+    path('api/auth/', include('djoser.urls.authtoken')),
+    path('api/', include('djoser.urls')),
 ]
 
 handler404 = 'core.views.page_not_found'
